@@ -6,38 +6,37 @@ const {
   getContentType,
   fetchLatestBaileysVersion,
   Browsers
-} = require('@whiskeysockets/baileys')
-
-const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson } = require('./lib/functions')
-const fs = require('fs')
-const P = require('pino')
-const config = require('./config')
-const qrcode = require('qrcode-terminal')
-const util = require('util')
-const { sms, downloadMediaMessage } = require('./lib/msg')
-const axios = require('axios')
-const { File } = require('megajs')
-const prefix = '.'
-
-const ownerNumber = ['923237045919']
-
-//===================SESSION-AUTH============================
-if (!fs.existsSync(__dirname + '/auth_info_baileys/creds.json')) {
-  if (!config.SESSION_ID) {
-    console.log('Please add your session to SESSION_ID env!!')
-    process.exit(1)
-  }
-
-  // extract after marker if present
-  let sessdata = config.SESSION_ID.includes('ARSL~')? config.SESSION_ID.split('ARSL~'): config.SESSION_ID
-  sessdata = (sessdata || '').trim()
-
-  // If sessdata is just an id without #key, allow providing key via config.MEGA_FILE_KEY
-  // Expected full format: <fileId>#<fileKey>
-  if (!sessdata.includes('#')) {
-    if (config.MEGA_FILE_KEY && config.MEGA_FILE_KEY.trim()) {
-      sessdata = `${sessdata}#${config.MEGA_FILE_KEY.trim()}`
-    } else {
+  } = require('@whiskeysockets/baileys')
+  
+  const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson } = require('./lib/functions')
+  const fs = require('fs')
+  const P = require('pino')
+  const config = require('./config')
+  const qrcode = require('qrcode-terminal')
+  const util = require('util')
+  const { sms,downloadMediaMessage } = require('./lib/msg')
+  const axios = require('axios')
+  const { File } = require('megajs')
+  const prefix = '.'
+  
+  const ownerNumber = ['923237045919']
+  
+  //===================SESSION-AUTH============================
+  if (!fs.existsSync(__dirname + '/auth_info_baileys/creds.json')) {
+  if(!config.SESSION_ID) return console.log('Please add your session to SESSION_ID env !!')
+  const sessdata = config.SESSION_ID.split("ARSL~")[1];
+  const filer = File.fromURL(`https://mega.nz/file/${sessdata}`)
+  filer.download((err, data) => {
+  if(err) throw err
+  fs.writeFile(__dirname + '/auth_info_baileys/creds.json', data, () => {
+  console.log("Session downloaded ✅")
+  })})}
+  
+  const express = require("express");
+  const app = express();
+  const port = process.env.PORT || 8000;
+  
+  //=============================================
       console.error('Invalid SESSION_ID: missing file key after #. Set MEGA_FILE_KEY or include #<key> in SESSION_ID.')
       process.exit(1)
     }
